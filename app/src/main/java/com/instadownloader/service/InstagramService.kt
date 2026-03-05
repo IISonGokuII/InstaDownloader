@@ -71,6 +71,7 @@ class InstagramService {
             val userJson = response["data"]?.jsonObject?.get("user") ?: return null
             jsonConfig.decodeFromJsonElement<InstagramUser>(userJson)
         } catch (e: Exception) {
+            e.printStackTrace()
             null
         }
     }
