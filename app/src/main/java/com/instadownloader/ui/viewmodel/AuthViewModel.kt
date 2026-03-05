@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.instadownloader.data.preferences.UserPreferences
 import com.instadownloader.data.repository.InstagramRepository
+import com.instadownloader.service.AuthResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -14,9 +15,21 @@ class AuthViewModel @Inject constructor(
     private val prefs: UserPreferences
 ) : ViewModel() {
 
+    fun login(username: String, pass: String, onResult: (AuthResult) -> Unit) {
+        viewModelScope.launch {
+            val result = repository.login(username, pass)
+            if (result is AuthResult.Success) {
+                prefs.setLoggedIn(true)
+                prefs.setAnonymous(false)
+            }
+            onResult(result)
+        }
+    }
+
     fun loginAnonymous() {
         viewModelScope.launch {
             prefs.setAnonymous(true)
+            prefs.setLoggedIn(false)
         }
     }
 }

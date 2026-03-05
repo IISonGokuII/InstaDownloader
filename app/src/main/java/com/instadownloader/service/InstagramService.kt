@@ -10,7 +10,15 @@ import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.get
 import io.ktor.client.request.header
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsText
 import io.ktor.client.call.body
+import io.ktor.http.Parameters
+import io.ktor.client.request.forms.FormDataContent
+import io.ktor.client.plugins.plugin
+import io.ktor.http.Url
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -58,10 +66,47 @@ class InstagramService {
 
     suspend fun login(user: String, pass: String): AuthResult {
         return try {
-            client.get("https://www.instagram.com/") // Get CSRF
-            AuthResult.Success
+            // Hole initiale Session / CSRF Token
+            client.get("https://www.instagram.com/")
+            
+            // Lese Token aus dem Cookie Manager
+            val cookies = client.plugin(HttpCookies).get(Url("https://www.instagram.com"))
+            val csrfToken = cookies.find { it.name == "csrftoken" }?.value ?: ""
+
+            val response: HttpResponse = client.post("https://www.instagram.com/accounts/login/ajax/") {
+                header("x-csrftoken", csrfToken)
+                header("Content-Type", "application/x-www-form-urlencoded")
+                setBody(FormDataContent(
+                    Parameters.build {
+                        append("username", user)
+                        append("enc_password", "#PWD_INSTAGRAM_BROWSER:0:${System.currentTimeMillis()}:$pass")
+                        append("queryParams", "{}")
+                        append("optIntoOneTap", "false")
+                    }
+                ))
+            }
+            
+            val responseBody = response.bodyAsText()
+            val jsonObj = jsonConfig.decodeFromString<JsonObject>(responseBody)
+
+            when {
+                jsonObj["authenticated"]?.toString()?.toBooleanStrictOrNull() == true -> AuthResult.Success
+                jsonObj["two_factor_required"]?.toString()?.toBooleanStrictOrNull() == true -> {
+                    val identifier = jsonObj["two_factor_info"]?.jsonObject?.get("two_factor_identifier")?.toString()?.replace("\"", "") ?: ""
+                    AuthResult.TwoFactorRequired(identifier, AuthResult.TwoFactorMethod.AUTHENTICATOR_APP)
+                }
+                jsonObj["message"]?.toString()?.contains("checkpoint_required") == true -> {
+                    val url = jsonObj["checkpoint_url"]?.toString()?.replace("\"", "") ?: ""
+                    AuthResult.CheckpointRequired(url)
+                }
+                else -> {
+                    val errorMsg = jsonObj["message"]?.toString()?.replace("\"", "") ?: "Login fehlgeschlagen"
+                    AuthResult.Error(errorMsg)
+                }
+            }
         } catch (e: Exception) {
-            AuthResult.Error(e.message ?: "Login failed")
+            e.printStackTrace()
+            AuthResult.Error(e.message ?: "Login-Anfrage fehlgeschlagen")
         }
     }
 
