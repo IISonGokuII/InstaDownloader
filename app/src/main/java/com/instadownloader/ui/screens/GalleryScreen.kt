@@ -27,7 +27,7 @@ import com.instadownloader.ui.viewmodel.GalleryFile
 import com.instadownloader.ui.viewmodel.GalleryViewModel
 import java.io.File
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GalleryScreen(
     viewModel: GalleryViewModel = hiltViewModel()
@@ -42,14 +42,14 @@ fun GalleryScreen(
 
     Column(modifier = Modifier.fillMaxSize()) {
         if (isSelectionMode) {
-            SmallTopAppBar(
+            TopAppBar(
                 title = { Text("${selectedFiles.size} ausgewählt") },
                 actions = {
                     IconButton(onClick = { viewModel.deleteSelected() }) {
                         Icon(Icons.Default.Delete, contentDescription = "Löschen")
                     }
                 },
-                colors = TopAppBarDefaults.smallTopAppBarColors(
+                colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant
                 )
             )

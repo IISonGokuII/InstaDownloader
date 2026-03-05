@@ -60,29 +60,8 @@ fun MainScreen() {
 data class TabItem(val title: String, val icon: ImageVector)
 
 @Composable
-fun SearchScreen() {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.Center) {
-        Text("Search Screen")
-    }
-}
-
-@Composable
 fun DownloadsScreen() {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.Center) {
-        Text("Downloads Screen")
-    }
-}
-
-@Composable
-fun GalleryScreen() {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.Center) {
-        Text("Gallery Screen")
-    }
-}
-
-@Composable
-fun SettingsScreen() {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.Center) {
-        Text("Settings Screen")
+        Text("Download History wird im nächsten Update implementiert")
     }
 }

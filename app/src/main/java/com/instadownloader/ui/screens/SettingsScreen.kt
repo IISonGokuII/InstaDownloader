@@ -1,5 +1,6 @@
 package com.instadownloader.ui.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
@@ -111,6 +112,6 @@ fun SettingsClickItem(
         supportingContent = { Text(subtitle) },
         leadingContent = { Icon(icon, contentDescription = null) },
         trailingContent = { Icon(Icons.Default.ChevronRight, contentDescription = null) },
-        modifier = androidx.compose.foundation.clickable(onClick = onClick)
+        modifier = Modifier.clickable(onClick = onClick)
     )
 }

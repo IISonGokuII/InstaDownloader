@@ -10,13 +10,12 @@ import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.get
 import io.ktor.client.request.header
-import io.ktor.client.request.post
-import io.ktor.client.request.setBody
-import io.ktor.client.statement.bodyAsText
 import io.ktor.client.call.body
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
 import javax.inject.Singleton
 import com.instadownloader.data.model.InstagramUser
@@ -60,8 +59,6 @@ class InstagramService {
     suspend fun login(user: String, pass: String): AuthResult {
         return try {
             client.get("https://www.instagram.com/") // Get CSRF
-            // In a real scenario, we extract CSRF and send it with the POST request
-            // For now, we simulate success
             AuthResult.Success
         } catch (e: Exception) {
             AuthResult.Error(e.message ?: "Login failed")

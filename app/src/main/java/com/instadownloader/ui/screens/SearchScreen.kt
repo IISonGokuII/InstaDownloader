@@ -74,7 +74,7 @@ fun SearchScreen(
                 if (searchQuery.isNotEmpty()) viewModel.searchUser(searchQuery)
             }),
             shape = RoundedCornerShape(16.dp),
-            colors = TextFieldDefaults.outlinedTextFieldColors(
+            colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
                 unfocusedBorderColor = MaterialTheme.colorScheme.outline
             )
