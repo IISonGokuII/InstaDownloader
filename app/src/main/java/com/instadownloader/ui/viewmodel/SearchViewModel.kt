@@ -35,21 +35,26 @@ class SearchViewModel @Inject constructor(
     fun searchUser(username: String) {
         viewModelScope.launch {
             _uiState.value = SearchUiState.Loading
-            val user = repository.getUser(username)
-            if (user != null) {
-                val posts = repository.getPosts(user.pk)
-                _uiState.value = SearchUiState.Success(user, posts)
-                
-                // Add to history
-                historyDao.insertSearch(
-                    SearchHistoryEntity(
-                        username = user.username,
-                        profilePicUrl = user.profile_pic_url,
-                        timestamp = System.currentTimeMillis()
+            try {
+                val user = repository.getUser(username)
+                if (user != null) {
+                    val posts = repository.getPosts(user.pk)
+                    _uiState.value = SearchUiState.Success(user, posts)
+                    
+                    // Add to history
+                    historyDao.insertSearch(
+                        SearchHistoryEntity(
+                            username = user.username,
+                            profilePicUrl = user.profile_pic_url,
+                            timestamp = System.currentTimeMillis()
+                        )
                     )
-                )
-            } else {
-                _uiState.value = SearchUiState.Error("Benutzer nicht gefunden")
+                } else {
+                    _uiState.value = SearchUiState.Error("Benutzer nicht gefunden. Profil evtl. privat oder blockiert.")
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _uiState.value = SearchUiState.Error("Netzwerkfehler: ${e.message}")
             }
         }
     }
