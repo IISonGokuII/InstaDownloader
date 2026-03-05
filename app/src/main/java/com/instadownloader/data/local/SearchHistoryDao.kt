@@ -19,4 +19,7 @@ interface SearchHistoryDao {
 
     @Query("UPDATE search_history SET isFavorite = :isFavorite WHERE username = :username")
     suspend fun updateFavorite(username: String, isFavorite: Boolean)
+
+    @Query("DELETE FROM search_history")
+    suspend fun clearAllHistory()
 }

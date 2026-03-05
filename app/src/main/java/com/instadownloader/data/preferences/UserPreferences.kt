@@ -19,6 +19,7 @@ class UserPreferences @Inject constructor(@ApplicationContext private val contex
     private val IS_HD_QUALITY = booleanPreferencesKey("is_hd_quality")
     private val IS_LOGGED_IN = booleanPreferencesKey("is_logged_in")
     private val IS_ANONYMOUS = booleanPreferencesKey("is_anonymous")
+    private val IS_CLIPBOARD_MONITOR = booleanPreferencesKey("is_clipboard_monitor")
 
     val isHdQuality: Flow<Boolean> = context.dataStore.data.map { preferences ->
         preferences[IS_HD_QUALITY] ?: true
@@ -30,6 +31,10 @@ class UserPreferences @Inject constructor(@ApplicationContext private val contex
 
     val isAnonymous: Flow<Boolean> = context.dataStore.data.map { preferences ->
         preferences[IS_ANONYMOUS] ?: false
+    }
+
+    val isClipboardMonitor: Flow<Boolean> = context.dataStore.data.map { preferences ->
+        preferences[IS_CLIPBOARD_MONITOR] ?: false
     }
 
     suspend fun setHdQuality(isHd: Boolean) {
@@ -47,6 +52,12 @@ class UserPreferences @Inject constructor(@ApplicationContext private val contex
     suspend fun setAnonymous(anonymous: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[IS_ANONYMOUS] = anonymous
+        }
+    }
+
+    suspend fun setClipboardMonitor(enabled: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[IS_CLIPBOARD_MONITOR] = enabled
         }
     }
 }
