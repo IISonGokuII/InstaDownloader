@@ -1,0 +1,84 @@
+[versions]
+agp                    = "8.7.3"
+kotlin                 = "2.0.21"
+ksp                    = "2.0.21-1.0.28"          # EXAKT: prefix = kotlin version
+compose-bom            = "2024.12.01"
+hilt                   = "2.52"
+hilt-androidx          = "1.2.0"
+ktor                   = "2.3.12"
+room                   = "2.6.1"
+media3                 = "1.5.0"
+workmanager            = "2.9.1"
+coil                   = "2.7.0"
+datastore              = "1.1.1"
+kotlinx-serialization  = "1.7.3"
+core-ktx               = "1.15.0"
+lifecycle              = "2.8.7"
+navigation             = "2.8.4"
+activity               = "1.9.3"
+splashscreen           = "1.0.1"
+
+[libraries]
+# Core
+androidx-core-ktx                  = { group = "androidx.core",              name = "core-ktx",                    version.ref = "core-ktx"    }
+androidx-core-splashscreen         = { group = "androidx.core",              name = "core-splashscreen",            version.ref = "splashscreen"}
+androidx-lifecycle-runtime-ktx     = { group = "androidx.lifecycle",         name = "lifecycle-runtime-ktx",        version.ref = "lifecycle"   }
+androidx-lifecycle-viewmodel       = { group = "androidx.lifecycle",         name = "lifecycle-viewmodel-compose",  version.ref = "lifecycle"   }
+androidx-activity-compose          = { group = "androidx.activity",          name = "activity-compose",             version.ref = "activity"    }
+androidx-navigation-compose        = { group = "androidx.navigation",        name = "navigation-compose",           version.ref = "navigation"  }
+
+# Compose (via BOM – KEINE Einzelversionen angeben!)
+compose-bom                        = { group = "androidx.compose",           name = "compose-bom",                  version.ref = "compose-bom" }
+compose-ui                         = { group = "androidx.compose.ui",        name = "ui"                                                        }
+compose-ui-graphics                = { group = "androidx.compose.ui",        name = "ui-graphics"                                               }
+compose-ui-tooling                 = { group = "androidx.compose.ui",        name = "ui-tooling"                                                }
+compose-ui-tooling-preview         = { group = "androidx.compose.ui",        name = "ui-tooling-preview"                                        }
+compose-material3                  = { group = "androidx.compose.material3", name = "material3"                                                 }
+compose-foundation                 = { group = "androidx.compose.foundation",name = "foundation"                                                }
+compose-animation                  = { group = "androidx.compose.animation", name = "animation"                                                 }
+compose-icons-extended             = { group = "androidx.compose.material",  name = "material-icons-extended"                                   }
+
+# Hilt
+hilt-android                       = { group = "com.google.dagger",          name = "hilt-android",                 version.ref = "hilt"         }
+hilt-compiler                      = { group = "com.google.dagger",          name = "hilt-android-compiler",        version.ref = "hilt"         }
+hilt-navigation-compose            = { group = "androidx.hilt",              name = "hilt-navigation-compose",      version.ref = "hilt-androidx" }
+hilt-work                          = { group = "androidx.hilt",              name = "hilt-work",                    version.ref = "hilt-androidx" }
+hilt-work-compiler                 = { group = "androidx.hilt",              name = "hilt-compiler",                version.ref = "hilt-androidx" }
+
+# Ktor
+ktor-client-core                   = { group = "io.ktor",                    name = "ktor-client-core",             version.ref = "ktor"         }
+ktor-client-cio                    = { group = "io.ktor",                    name = "ktor-client-cio",              version.ref = "ktor"         }
+ktor-client-content-negotiation    = { group = "io.ktor",                    name = "ktor-client-content-negotiation", version.ref = "ktor"      }
+ktor-serialization-json            = { group = "io.ktor",                    name = "ktor-serialization-kotlinx-json", version.ref = "ktor"      }
+ktor-client-logging                = { group = "io.ktor",                    name = "ktor-client-logging",          version.ref = "ktor"         }
+
+# Serialization
+kotlinx-serialization-json         = { group = "org.jetbrains.kotlinx",      name = "kotlinx-serialization-json",   version.ref = "kotlinx-serialization" }
+
+# Room
+room-runtime                       = { group = "androidx.room",              name = "room-runtime",                 version.ref = "room"         }
+room-ktx                           = { group = "androidx.room",              name = "room-ktx",                     version.ref = "room"         }
+room-compiler                      = { group = "androidx.room",              name = "room-compiler",                version.ref = "room"         }
+
+# Media3
+media3-exoplayer                   = { group = "androidx.media3",            name = "media3-exoplayer",             version.ref = "media3"       }
+media3-ui                          = { group = "androidx.media3",            name = "media3-ui",                    version.ref = "media3"       }
+media3-session                     = { group = "androidx.media3",            name = "media3-session",               version.ref = "media3"       }
+
+# WorkManager
+workmanager                        = { group = "androidx.work",              name = "work-runtime-ktx",             version.ref = "workmanager"  }
+
+# Coil
+coil-compose                       = { group = "io.coil-kt",                 name = "coil-compose",                 version.ref = "coil"         }
+coil-video                         = { group = "io.coil-kt",                 name = "coil-video",                   version.ref = "coil"         }
+
+# DataStore
+datastore-preferences              = { group = "androidx.datastore",         name = "datastore-preferences",        version.ref = "datastore"    }
+
+[plugins]
+android-application    = { id = "com.android.application",                    version.ref = "agp"    }
+kotlin-android         = { id = "org.jetbrains.kotlin.android",               version.ref = "kotlin" }
+kotlin-compose         = { id = "org.jetbrains.kotlin.plugin.compose",        version.ref = "kotlin" }
+kotlin-serialization   = { id = "org.jetbrains.kotlin.plugin.serialization",  version.ref = "kotlin" }
+hilt                   = { id = "com.google.dagger.hilt.android",             version.ref = "hilt"   }
+ksp                    = { id = "com.google.devtools.ksp",                    version.ref = "ksp"    }

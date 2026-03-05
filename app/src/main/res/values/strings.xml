@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">InstaDownloader</string>
+    <string name="login_username">Benutzername</string>
+    <string name="login_password">Passwort</string>
+    <string name="login_button">Anmelden</string>
+    <string name="login_anonymous">Anonym fortfahren</string>
+    <string name="search_hint">Benutzername suchen…</string>
+    <string name="tab_search">Suchen</string>
+    <string name="tab_downloads">Downloads</string>
+    <string name="tab_gallery">Galerie</string>
+    <string name="tab_settings">Einstellungen</string>
+    <string name="anonymous_mode_hint">Anonymer Modus – nur öffentliche Profile</string>
+    <string name="clipboard_instagram_link">Instagram-Link erkannt</string>
+    <string name="clipboard_open">Öffnen</string>
+    <string name="two_factor_title">Zwei-Faktor-Authentifizierung</string>
+    <string name="two_factor_confirm">Bestätigen</string>
+    <string name="two_factor_back">Zurück zum Login</string>
+    <string name="quality_hd">HD</string>
+    <string name="quality_sd">SD</string>
+    <string name="gallery_save">In Galerie speichern</string>
+    <string name="gallery_delete">Löschen</string>
+    <string name="notification_channel_name">Downloads</string>
+    <string name="download_success">Download abgeschlossen</string>
+    <string name="download_error">Download fehlgeschlagen</string>
+</resources>

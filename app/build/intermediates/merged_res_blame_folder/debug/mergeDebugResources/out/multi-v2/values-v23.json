@@ -1,0 +1,19 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.instadownloader.app-mergeDebugResources-75:/values-v23/values-v23.xml",
+            "map": [
+                {
+                    "source": "C:\\Users\\WhatsappBot\\.gradle\\caches\\8.9\\transforms\\f0c52a5d24affe4b0405e09afb6133d4\\transformed\\work-runtime-2.9.1\\res\\values-v23\\values-v23.xml",
+                    "from": {
+                        "startLines": "2,3",
+                        "startColumns": "4,4",
+                        "startOffsets": "55,121",
+                        "endColumns": "65,62",
+                        "endOffsets": "116,179"
+                    }
+                }
+            ]
+        }
+    ]
+}
