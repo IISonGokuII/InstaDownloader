@@ -47,11 +47,18 @@ import com.instadownloader.worker.DownloadWorker
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchScreen(
+    initialUrl: String? = null,
     viewModel: SearchViewModel = hiltViewModel()
 ) {
-    var searchQuery by remember { mutableStateOf("") }
+    var searchQuery by remember { mutableStateOf(initialUrl ?: "") }
     val uiState by viewModel.uiState.collectAsState()
     val history by viewModel.searchHistory.collectAsState(initial = emptyList())
+
+    LaunchedEffect(initialUrl) {
+        if (initialUrl != null) {
+            viewModel.searchByUrl(initialUrl)
+        }
+    }
 
     Column(modifier = Modifier.fillMaxSize()) {
         // Search Bar
@@ -101,6 +108,16 @@ fun SearchScreen(
             }
             is SearchUiState.Success -> {
                 UserDetailContent(state.user, state.posts)
+            }
+            is SearchUiState.SuccessMedia -> {
+                Box(modifier = Modifier.fillMaxSize().padding(16.dp), contentAlignment = Alignment.TopCenter) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("Vorschau", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(bottom = 16.dp))
+                        PostItem(state.media)
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text("Klicke auf das Bild zum Herunterladen", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
             }
             is SearchUiState.Error -> {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

@@ -18,7 +18,8 @@ import com.instadownloader.ui.viewmodel.AuthViewModel
 @Composable
 fun NavGraph(
     viewModel: AuthViewModel = hiltViewModel(),
-    prefs: UserPreferences
+    prefs: UserPreferences,
+    initialUrl: String? = null
 ) {
     val navController = rememberNavController()
     val isLoggedIn by prefs.isLoggedIn.collectAsState(initial = false)
@@ -62,7 +63,8 @@ fun NavGraph(
                     navController.navigate(Routes.LOGIN) {
                         popUpTo(Routes.MAIN) { inclusive = true }
                     }
-                }
+                },
+                initialUrl = initialUrl
             )
         }
     }

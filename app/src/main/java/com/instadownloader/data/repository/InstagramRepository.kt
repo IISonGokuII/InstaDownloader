@@ -15,4 +15,5 @@ class InstagramRepository @Inject constructor(
     suspend fun submitTwoFactor(identifier: String, code: String): AuthResult = api.submitTwoFactor(identifier, code)
     suspend fun getUser(username: String): InstagramUser? = api.getUserProfile(username)
     suspend fun getPosts(userId: String): List<InstagramMedia> = api.getUserPosts(userId)
+    suspend fun getMediaByUrl(url: String): InstagramMedia? = api.getMediaByUrl(url)
 }

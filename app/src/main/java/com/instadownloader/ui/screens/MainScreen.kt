@@ -19,9 +19,17 @@ import com.instadownloader.ui.viewmodel.SettingsViewModel
 @Composable
 fun MainScreen(
     onLogout: () -> Unit,
+    initialUrl: String? = null,
     settingsViewModel: SettingsViewModel = hiltViewModel()
 ) {
     var selectedTabIndex by remember { mutableStateOf(0) }
+    
+    // Jump to search if we have a shared URL
+    LaunchedEffect(initialUrl) {
+        if (initialUrl != null) {
+            selectedTabIndex = 0
+        }
+    }
     val isAnonymous by settingsViewModel.prefs.isAnonymous.collectAsState(initial = false)
 
     val tabs = listOf(
@@ -73,7 +81,7 @@ fun MainScreen(
             }
             Box(modifier = Modifier.weight(1f)) {
                 when (selectedTabIndex) {
-                    0 -> SearchScreen()
+                    0 -> SearchScreen(initialUrl = initialUrl)
                     1 -> DownloadsScreen()
                     2 -> GalleryScreen()
                     3 -> SettingsScreen(onLogout = onLogout)

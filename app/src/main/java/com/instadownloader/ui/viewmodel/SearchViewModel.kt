@@ -18,6 +18,7 @@ sealed class SearchUiState {
     object Idle : SearchUiState()
     object Loading : SearchUiState()
     data class Success(val user: InstagramUser, val posts: List<InstagramMedia>) : SearchUiState()
+    data class SuccessMedia(val media: InstagramMedia) : SearchUiState()
     data class Error(val message: String) : SearchUiState()
 }
 
@@ -33,6 +34,10 @@ class SearchViewModel @Inject constructor(
     val searchHistory = historyDao.getAllHistory()
 
     fun searchUser(username: String) {
+        if (username.contains("instagram.com")) {
+            searchByUrl(username)
+            return
+        }
         viewModelScope.launch {
             _uiState.value = SearchUiState.Loading
             try {
@@ -55,6 +60,23 @@ class SearchViewModel @Inject constructor(
             } catch (e: Exception) {
                 e.printStackTrace()
                 _uiState.value = SearchUiState.Error("Netzwerkfehler: ${e.message}")
+            }
+        }
+    }
+
+    fun searchByUrl(url: String) {
+        viewModelScope.launch {
+            _uiState.value = SearchUiState.Loading
+            try {
+                val media = repository.getMediaByUrl(url)
+                if (media != null) {
+                    _uiState.value = SearchUiState.SuccessMedia(media)
+                } else {
+                    _uiState.value = SearchUiState.Error("Inhalt konnte nicht geladen werden. Link evtl. ungültig oder privat.")
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _uiState.value = SearchUiState.Error("Netzwerkfehler beim Laden des Links")
             }
         }
     }

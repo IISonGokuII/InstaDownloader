@@ -12,6 +12,7 @@ import androidx.core.app.NotificationCompat
 import com.instadownloader.MainActivity
 import com.instadownloader.R
 import dagger.hilt.android.AndroidEntryPoint
+import com.instadownloader.util.UrlUtils
 
 @AndroidEntryPoint
 class ClipboardMonitorService : Service() {
@@ -21,8 +22,9 @@ class ClipboardMonitorService : Service() {
         val clipData = clipboardManager.primaryClip
         if (clipData != null && clipData.itemCount > 0) {
             val text = clipData.getItemAt(0).text?.toString() ?: ""
-            if (isInstagramUrl(text)) {
-                showDownloadNotification(text)
+            val extractedUrl = UrlUtils.extractUrl(text)
+            if (extractedUrl != null) {
+                showDownloadNotification(extractedUrl)
             }
         }
     }
@@ -69,13 +71,6 @@ class ClipboardMonitorService : Service() {
 
         val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         manager.notify(url.hashCode(), notification)
-    }
-
-    private fun isInstagramUrl(url: String): Boolean {
-        return url.contains("instagram.com/p/") || 
-               url.contains("instagram.com/reels/") || 
-               url.contains("instagram.com/reel/") ||
-               url.contains("instagram.com/stories/")
     }
 
     override fun onDestroy() {
