@@ -260,6 +260,11 @@ fun GalleryItem(
     }
 }
 
+import androidx.compose.foundation.gestures.rememberTransformableState
+import androidx.compose.foundation.gestures.transformable
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.graphicsLayer
+
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun FullscreenMediaViewer(
@@ -296,10 +301,29 @@ fun FullscreenMediaViewer(
                     if (file.isVideo) {
                         VideoPlayer(file.file)
                     } else {
+                        var scale by remember { mutableStateOf(1f) }
+                        var offset by remember { mutableStateOf(Offset.Zero) }
+                        val state = rememberTransformableState { zoomChange, offsetChange, _ ->
+                            scale = (scale * zoomChange).coerceIn(1f, 5f)
+                            if (scale > 1f) {
+                                offset += offsetChange
+                            } else {
+                                offset = Offset.Zero
+                            }
+                        }
+
                         AsyncImage(
                             model = file.file,
                             contentDescription = null,
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .graphicsLayer(
+                                    scaleX = scale,
+                                    scaleY = scale,
+                                    translationX = offset.x,
+                                    translationY = offset.y
+                                )
+                                .transformable(state = state),
                             contentScale = ContentScale.Fit
                         )
                     }
