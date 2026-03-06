@@ -28,6 +28,7 @@ import kotlinx.serialization.json.decodeFromJsonElement
 import javax.inject.Singleton
 import com.instadownloader.data.model.InstagramUser
 import com.instadownloader.data.model.InstagramMedia
+import com.instadownloader.data.model.Highlight
 
 sealed class AuthResult {
     object Success : AuthResult()
@@ -66,10 +67,7 @@ class InstagramService {
 
     suspend fun login(user: String, pass: String): AuthResult {
         return try {
-            // Hole initiale Session / CSRF Token
             client.get("https://www.instagram.com/")
-            
-            // Lese Token aus dem Cookie Manager
             val cookies = client.plugin(HttpCookies).get(Url("https://www.instagram.com"))
             val csrfToken = cookies.find { it.name == "csrftoken" }?.value ?: ""
 
@@ -162,11 +160,45 @@ class InstagramService {
         }
     }
 
+    suspend fun getUserStories(userId: String): List<InstagramMedia> {
+        return try {
+            val response: JsonObject = client.get("https://www.instagram.com/api/v1/feed/reels_media/?reels_ids=$userId").body()
+            val reels = response["reels"]?.jsonObject ?: return emptyList()
+            val userReel = reels[userId]?.jsonObject ?: return emptyList()
+            val items = userReel["items"]?.jsonArray ?: return emptyList()
+            items.map { jsonConfig.decodeFromJsonElement<InstagramMedia>(it) }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emptyList()
+        }
+    }
+
+    suspend fun getUserHighlights(userId: String): List<Highlight> {
+        return try {
+            val response: JsonObject = client.get("https://www.instagram.com/api/v1/highlights/$userId/highlights_tray/").body()
+            val tray = response["tray"]?.jsonArray ?: return emptyList()
+            tray.map { jsonConfig.decodeFromJsonElement<Highlight>(it) }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emptyList()
+        }
+    }
+
+    suspend fun getHighlightStories(highlightId: String): List<InstagramMedia> {
+        return try {
+            val response: JsonObject = client.get("https://www.instagram.com/api/v1/feed/reels_media/?reels_ids=$highlightId").body()
+            val reels = response["reels"]?.jsonObject ?: return emptyList()
+            val highlightReel = reels[highlightId]?.jsonObject ?: return emptyList()
+            val items = highlightReel["items"]?.jsonArray ?: return emptyList()
+            items.map { jsonConfig.decodeFromJsonElement<InstagramMedia>(it) }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emptyList()
+        }
+    }
+
     suspend fun getMediaByUrl(url: String): InstagramMedia? {
         return try {
-            // Instagram URLs are like https://www.instagram.com/p/C_abc123/
-            // We can try to append ?__a=1&__d=dis or use the api/v1/media/info/ endpoint if we have the media ID
-            // Simplest way for web-based:
             val response: JsonObject = client.get("$url?__a=1&__d=dis").body()
             val mediaJson = response["items"]?.jsonArray?.firstOrNull() ?: return null
             jsonConfig.decodeFromJsonElement<InstagramMedia>(mediaJson)

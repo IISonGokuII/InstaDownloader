@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -36,6 +37,7 @@ import androidx.work.WorkManager
 import androidx.work.workDataOf
 import coil.compose.AsyncImage
 import com.instadownloader.data.local.SearchHistoryEntity
+import com.instadownloader.data.model.Highlight
 import com.instadownloader.data.model.InstagramMedia
 import com.instadownloader.data.model.InstagramUser
 import com.instadownloader.ui.components.GlassCard
@@ -53,6 +55,7 @@ fun SearchScreen(
     var searchQuery by remember { mutableStateOf(initialUrl ?: "") }
     val uiState by viewModel.uiState.collectAsState()
     val history by viewModel.searchHistory.collectAsState(initial = emptyList())
+    val context = LocalContext.current
 
     LaunchedEffect(initialUrl) {
         if (initialUrl != null) {
@@ -107,7 +110,13 @@ fun SearchScreen(
                 }
             }
             is SearchUiState.Success -> {
-                UserDetailContent(state.user, state.posts)
+                UserDetailContent(
+                    user = state.user,
+                    posts = state.posts,
+                    stories = state.stories,
+                    highlights = state.highlights,
+                    onHighlightClick = { viewModel.downloadHighlight(it, context, state.user.username) }
+                )
             }
             is SearchUiState.SuccessMedia -> {
                 Box(modifier = Modifier.fillMaxSize().padding(16.dp), contentAlignment = Alignment.TopCenter) {
@@ -175,7 +184,13 @@ fun SearchHistoryList(
 }
 
 @Composable
-fun UserDetailContent(user: InstagramUser, posts: List<InstagramMedia>) {
+fun UserDetailContent(
+    user: InstagramUser,
+    posts: List<InstagramMedia>,
+    stories: List<InstagramMedia>,
+    highlights: List<Highlight>,
+    onHighlightClick: (Highlight) -> Unit
+) {
     val context = LocalContext.current
     
     Column(modifier = Modifier.fillMaxSize()) {
@@ -185,17 +200,10 @@ fun UserDetailContent(user: InstagramUser, posts: List<InstagramMedia>) {
                 Box(modifier = Modifier.clickable {
                     val hdPicUrl = user.profile_pic_url_hd.ifEmpty { user.profile_pic_url }
                     if (hdPicUrl.isNotEmpty()) {
-                        val workRequest = OneTimeWorkRequestBuilder<DownloadWorker>()
-                            .setInputData(workDataOf(
-                                DownloadWorker.KEY_URL to hdPicUrl,
-                                DownloadWorker.KEY_FILENAME to "profile_${user.username}.jpg",
-                                DownloadWorker.KEY_CATEGORY to user.username
-                            ))
-                            .build()
-                        WorkManager.getInstance(context).enqueue(workRequest)
+                        enqueueDownload(context, hdPicUrl, "profile_${user.username}.jpg", user.username)
                     }
                 }) {
-                    StoryRingAvatar(imageUrl = user.profile_pic_url, hasStory = false, size = 64.dp)
+                    StoryRingAvatar(imageUrl = user.profile_pic_url, hasStory = stories.isNotEmpty(), size = 64.dp)
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 Column {
@@ -212,6 +220,62 @@ fun UserDetailContent(user: InstagramUser, posts: List<InstagramMedia>) {
                 StatItem(user.following_count.toString(), "Gefolgt")
             }
         }
+
+        // Stories Row (if available)
+        if (stories.isNotEmpty()) {
+            Text("Stories", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(start = 16.dp, bottom = 8.dp))
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.padding(bottom = 16.dp)
+            ) {
+                items(stories) { story ->
+                    Box(modifier = Modifier.size(70.dp).clickable {
+                        val url = story.video_versions?.firstOrNull()?.url ?: story.image_versions2?.candidates?.firstOrNull()?.url ?: ""
+                        val ext = if (story.media_type == 2) "mp4" else "jpg"
+                        enqueueDownload(context, url, "story_${story.id}.$ext", user.username)
+                    }) {
+                        StoryRingAvatar(
+                            imageUrl = story.image_versions2?.candidates?.lastOrNull()?.url ?: "",
+                            hasStory = true,
+                            size = 60.dp
+                        )
+                    }
+                }
+            }
+        }
+
+        // Highlights Row
+        if (highlights.isNotEmpty()) {
+            Text("Highlights", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(start = 16.dp, bottom = 8.dp))
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.padding(bottom = 16.dp)
+            ) {
+                items(highlights) { highlight ->
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.width(70.dp).clickable { onHighlightClick(highlight) }
+                    ) {
+                        AsyncImage(
+                            model = highlight.cover_media?.cropped_image_version?.url,
+                            contentDescription = null,
+                            modifier = Modifier.size(60.dp).clip(androidx.compose.foundation.shape.CircleShape),
+                            contentScale = ContentScale.Crop
+                        )
+                        Text(
+                            highlight.title,
+                            style = MaterialTheme.typography.labelSmall,
+                            maxLines = 1,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                        )
+                    }
+                }
+            }
+        }
+
+        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
         // Posts Grid
         LazyVerticalGrid(

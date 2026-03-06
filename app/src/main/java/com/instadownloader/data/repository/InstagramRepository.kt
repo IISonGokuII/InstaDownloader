@@ -1,5 +1,6 @@
 package com.instadownloader.data.repository
 
+import com.instadownloader.data.model.Highlight
 import com.instadownloader.data.model.InstagramMedia
 import com.instadownloader.data.model.InstagramUser
 import com.instadownloader.service.AuthResult
@@ -15,5 +16,8 @@ class InstagramRepository @Inject constructor(
     suspend fun submitTwoFactor(identifier: String, code: String): AuthResult = api.submitTwoFactor(identifier, code)
     suspend fun getUser(username: String): InstagramUser? = api.getUserProfile(username)
     suspend fun getPosts(userId: String): List<InstagramMedia> = api.getUserPosts(userId)
+    suspend fun getStories(userId: String): List<InstagramMedia> = api.getUserStories(userId)
+    suspend fun getHighlights(userId: String): List<Highlight> = api.getUserHighlights(userId)
+    suspend fun getHighlightMedia(highlightId: String): List<InstagramMedia> = api.getHighlightStories(highlightId)
     suspend fun getMediaByUrl(url: String): InstagramMedia? = api.getMediaByUrl(url)
 }
