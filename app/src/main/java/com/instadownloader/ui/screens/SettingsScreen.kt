@@ -10,11 +10,14 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.MonitorHeart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.instadownloader.R
+import com.instadownloader.ui.theme.InstaDownloaderTheme
 import com.instadownloader.ui.viewmodel.SettingsViewModel
 
 @Composable
@@ -22,43 +25,43 @@ fun SettingsScreen(
     onLogout: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
-    val isHdQuality by viewModel.isHdQuality.collectAsState(initial = true)
-    val isClipboardMonitor by viewModel.isClipboardMonitor.collectAsState(initial = false)
+    val isHdQuality by viewModel.prefs.isHdQuality.collectAsState(initial = true)
+    val isClipboardMonitor by viewModel.prefs.isClipboardMonitor.collectAsState(initial = false)
 
     Column(modifier = Modifier.fillMaxSize()) {
         Text(
-            "Einstellungen",
+            stringResource(R.string.tab_settings),
             style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.padding(16.dp)
         )
 
-        SettingsSection("Allgemein") {
+        SettingsSection(stringResource(R.string.settings_general)) {
             SettingsToggleItem(
-                title = "HD Qualität",
-                subtitle = "Bilder und Videos in höchster Qualität laden",
+                title = stringResource(R.string.settings_hd_quality),
+                subtitle = stringResource(R.string.settings_hd_desc),
                 icon = Icons.Default.HighQuality,
                 checked = isHdQuality,
                 onCheckedChange = { viewModel.setHdQuality(it) }
             )
             SettingsToggleItem(
-                title = "Clipboard Monitor",
-                subtitle = "Instagram Links automatisch erkennen",
+                title = stringResource(R.string.settings_clipboard),
+                subtitle = stringResource(R.string.settings_clipboard_desc),
                 icon = Icons.Default.MonitorHeart,
                 checked = isClipboardMonitor,
                 onCheckedChange = { viewModel.setClipboardMonitor(it) }
             )
         }
 
-        SettingsSection("Datenverwaltung") {
+        SettingsSection(stringResource(R.string.settings_data)) {
             SettingsClickItem(
-                title = "Suchverlauf löschen",
-                subtitle = "Alle Einträge aus der Suche entfernen",
+                title = stringResource(R.string.settings_clear_history),
+                subtitle = stringResource(R.string.settings_clear_history_desc),
                 icon = Icons.Default.DeleteSweep,
                 onClick = { viewModel.clearHistory() }
             )
         }
 
-        SettingsSection("Über") {
+        SettingsSection(stringResource(R.string.settings_about)) {
             SettingsClickItem(
                 title = "Version",
                 subtitle = "1.0.0 (Build 2026)",
@@ -66,9 +69,9 @@ fun SettingsScreen(
                 onClick = {}
             )
             SettingsClickItem(
-                title = "Ausloggen",
-                subtitle = "Sitzung beenden",
-                icon = Icons.Default.DeleteSweep, // Placeholder for exit to app
+                title = stringResource(R.string.settings_logout),
+                subtitle = stringResource(R.string.settings_logout_desc),
+                icon = Icons.Default.DeleteSweep,
                 onClick = onLogout
             )
         }
@@ -85,7 +88,7 @@ fun SettingsSection(title: String, content: @Composable ColumnScope.() -> Unit) 
             modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp)
         )
         content()
-        Divider(modifier = Modifier.padding(vertical = 8.dp), color = MaterialTheme.colorScheme.outlineVariant)
+        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = MaterialTheme.colorScheme.outlineVariant)
     }
 }
 
@@ -121,4 +124,12 @@ fun SettingsClickItem(
         trailingContent = { Icon(Icons.Default.ChevronRight, contentDescription = null) },
         modifier = Modifier.clickable(onClick = onClick)
     )
+}
+
+@Preview
+@Composable
+fun SettingsScreenPreview() {
+    InstaDownloaderTheme {
+        SettingsScreen(onLogout = {})
+    }
 }

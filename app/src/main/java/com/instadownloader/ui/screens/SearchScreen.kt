@@ -1,7 +1,6 @@
 package com.instadownloader.ui.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -23,19 +22,26 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import com.instadownloader.R
 import com.instadownloader.data.local.SearchHistoryEntity
 import com.instadownloader.data.model.Highlight
 import com.instadownloader.data.model.InstagramMedia
 import com.instadownloader.data.model.InstagramUser
 import com.instadownloader.ui.components.GlassCard
 import com.instadownloader.ui.components.StoryRingAvatar
+import com.instadownloader.ui.theme.InstaDownloaderTheme
 import com.instadownloader.ui.viewmodel.SearchUiState
 import com.instadownloader.ui.viewmodel.SearchViewModel
+
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -46,6 +52,7 @@ fun SearchScreen(
     var searchQuery by remember { mutableStateOf(initialUrl ?: "") }
     val uiState by viewModel.uiState.collectAsState()
     val history by viewModel.searchHistory.collectAsState(initial = emptyList())
+    val context = LocalContext.current
 
     LaunchedEffect(initialUrl) {
         if (initialUrl != null) {
@@ -60,7 +67,7 @@ fun SearchScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            placeholder = { Text("Benutzername suchen...") },
+            placeholder = { Text(stringResource(R.string.search_hint)) },
             leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
             trailingIcon = {
                 if (searchQuery.isNotEmpty()) {
@@ -115,7 +122,7 @@ fun SearchScreen(
             is SearchUiState.SuccessMedia -> {
                 Box(modifier = Modifier.fillMaxSize().padding(16.dp), contentAlignment = Alignment.TopCenter) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("Vorschau", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(bottom = 16.dp))
+                        Text(stringResource(R.string.preview_title), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(bottom = 16.dp))
                         PostItem(
                             post = state.media,
                             onDownloadClick = { url, filename -> 
@@ -123,7 +130,7 @@ fun SearchScreen(
                             }
                         )
                         Spacer(modifier = Modifier.height(16.dp))
-                        Text("Klicke auf das Bild zum Herunterladen", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(stringResource(R.string.click_to_download), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             }
@@ -146,7 +153,7 @@ fun SearchHistoryList(
     LazyColumn(modifier = Modifier.fillMaxSize()) {
         item {
             Text(
-                "Verlauf",
+                stringResource(R.string.history_title),
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.padding(16.dp)
             )
@@ -216,14 +223,14 @@ fun UserDetailContent(
                 modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                StatItem(user.media_count.toString(), "Beiträge")
-                StatItem(user.follower_count.toString(), "Follower")
-                StatItem(user.following_count.toString(), "Gefolgt")
+                StatItem(user.media_count.toString(), stringResource(R.string.stats_posts))
+                StatItem(user.follower_count.toString(), stringResource(R.string.stats_followers))
+                StatItem(user.following_count.toString(), stringResource(R.string.stats_following))
             }
         }
 
         if (stories.isNotEmpty()) {
-            Text("Stories", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(start = 16.dp, bottom = 8.dp))
+            Text(stringResource(R.string.badge_story), style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(start = 16.dp, bottom = 8.dp))
             LazyRow(
                 contentPadding = PaddingValues(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -246,7 +253,7 @@ fun UserDetailContent(
         }
 
         if (highlights.isNotEmpty()) {
-            Text("Highlights", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(start = 16.dp, bottom = 8.dp))
+            Text(stringResource(R.string.badge_highlight), style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(start = 16.dp, bottom = 8.dp))
             LazyRow(
                 contentPadding = PaddingValues(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -277,7 +284,13 @@ fun UserDetailContent(
         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
         var selectedProfileTab by remember { mutableStateOf(0) }
-        val profileTabs = listOf("Beiträge", "Reels", "Markiert", "Gespeichert", "Archiv")
+        val profileTabs = listOf(
+            stringResource(R.string.tab_posts),
+            stringResource(R.string.tab_reels),
+            stringResource(R.string.tab_tagged),
+            stringResource(R.string.tab_saved),
+            stringResource(R.string.tab_archive)
+        )
 
         ScrollableTabRow(
             selectedTabIndex = selectedProfileTab,
@@ -307,7 +320,7 @@ fun UserDetailContent(
 
         if (activeMediaList.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize().padding(32.dp), contentAlignment = Alignment.Center) {
-                Text("Keine Medien gefunden", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(stringResource(R.string.no_media_found), color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         } else {
             LazyVerticalGrid(
@@ -386,5 +399,13 @@ fun PostItem(
                 )
             }
         }
+    }
+}
+
+@Preview
+@Composable
+fun SearchScreenPreview() {
+    InstaDownloaderTheme {
+        SearchScreen()
     }
 }

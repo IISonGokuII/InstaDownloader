@@ -13,16 +13,20 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.instadownloader.R
 import com.instadownloader.service.AuthResult
 import com.instadownloader.ui.components.GlassCard
 import com.instadownloader.ui.components.GradientButton
 import com.instadownloader.ui.theme.subtleGradient
+import com.instadownloader.ui.theme.InstaDownloaderTheme
 import com.instadownloader.ui.viewmodel.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -37,6 +41,8 @@ fun LoginScreen(
     var passwordVisible by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    val checkpointMsg = stringResource(R.string.checkpoint_required)
+    val fieldsReqMsg = stringResource(R.string.login_fields_required)
 
     Box(
         modifier = Modifier
@@ -54,7 +60,7 @@ fun LoginScreen(
                 modifier = Modifier.padding(24.dp)
             ) {
                 Text(
-                    text = "InstaDownloader",
+                    text = stringResource(R.string.app_name),
                     style = MaterialTheme.typography.headlineMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.padding(bottom = 32.dp)
@@ -63,7 +69,7 @@ fun LoginScreen(
                 OutlinedTextField(
                     value = username,
                     onValueChange = { username = it; errorMessage = null },
-                    label = { Text("Benutzername") },
+                    label = { Text(stringResource(R.string.login_username)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
@@ -79,7 +85,7 @@ fun LoginScreen(
                 OutlinedTextField(
                     value = password,
                     onValueChange = { password = it; errorMessage = null },
-                    label = { Text("Passwort") },
+                    label = { Text(stringResource(R.string.login_password)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
@@ -109,7 +115,7 @@ fun LoginScreen(
                 Spacer(modifier = Modifier.height(32.dp))
 
                 GradientButton(
-                    text = "Anmelden",
+                    text = stringResource(R.string.login_button),
                     isLoading = isLoading,
                     onClick = {
                         if (username.isNotBlank() && password.isNotBlank()) {
@@ -120,11 +126,11 @@ fun LoginScreen(
                                     is AuthResult.Success -> onLoginSuccess()
                                     is AuthResult.Error -> errorMessage = result.message
                                     is AuthResult.TwoFactorRequired -> onTwoFactorRequired(result.identifier, result.method)
-                                    is AuthResult.CheckpointRequired -> errorMessage = "Sicherheits-Checkpoint erforderlich. Bitte logge dich über die Instagram-App ein."
+                                    is AuthResult.CheckpointRequired -> errorMessage = checkpointMsg
                                 }
                             }
                         } else {
-                            errorMessage = "Bitte Felder ausfüllen"
+                            errorMessage = fieldsReqMsg
                         }
                     },
                     modifier = Modifier.fillMaxWidth()
@@ -138,8 +144,20 @@ fun LoginScreen(
                         onLoginSuccess()
                     }
                 ) {
-                    Text("Anonym fortfahren", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(R.string.login_anonymous), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
+            }
+        }
+    }
+}
+
+@Preview
+@Composable
+fun LoginScreenPreview() {
+    InstaDownloaderTheme {
+        Surface {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("Login Screen Preview")
             }
         }
     }

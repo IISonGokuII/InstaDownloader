@@ -47,7 +47,7 @@ class DownloadWorker @AssistedInject constructor(
             downloadManager.downloadFile(url, filename, category) { progress ->
                 setProgressAsync(workDataOf(KEY_PROGRESS to progress))
                 // Also update Room for the History Tab
-                kotlinx.coroutines.GlobalScope.launch {
+                CoroutineScope(Dispatchers.IO).launch {
                     downloadTaskDao.updateProgress(id.toString(), DownloadStatus.DOWNLOADING, progress)
                 }
             }

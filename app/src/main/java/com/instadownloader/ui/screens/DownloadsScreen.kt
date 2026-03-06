@@ -14,11 +14,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.instadownloader.R
 import com.instadownloader.data.local.DownloadStatus
 import com.instadownloader.data.local.DownloadTaskEntity
+import com.instadownloader.ui.theme.InstaDownloaderTheme
 import com.instadownloader.ui.viewmodel.DownloadsViewModel
 import java.text.SimpleDateFormat
 import java.util.*
@@ -32,17 +36,17 @@ fun DownloadsScreen(
 
     Column(modifier = Modifier.fillMaxSize()) {
         TopAppBar(
-            title = { Text("Download-Verlauf") },
+            title = { Text(stringResource(R.string.tab_downloads)) },
             actions = {
                 IconButton(onClick = { viewModel.clearHistory() }) {
-                    Icon(Icons.Default.DeleteSweep, contentDescription = "Verlauf leeren")
+                    Icon(Icons.Default.DeleteSweep, contentDescription = null)
                 }
             }
         )
 
         if (tasks.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("Keine Downloads in der Historie", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(stringResource(R.string.download_history_empty), color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         } else {
             LazyColumn(
@@ -100,10 +104,10 @@ fun DownloadTaskItem(task: DownloadTaskEntity) {
                 }
                 Text(
                     text = when (task.status) {
-                        DownloadStatus.QUEUED -> "Warten..."
+                        DownloadStatus.QUEUED -> stringResource(R.string.download_status_queued)
                         DownloadStatus.DOWNLOADING -> "${task.progress}%"
-                        DownloadStatus.COMPLETED -> "Fertig"
-                        DownloadStatus.FAILED -> "Fehler"
+                        DownloadStatus.COMPLETED -> stringResource(R.string.download_status_completed)
+                        DownloadStatus.FAILED -> stringResource(R.string.download_status_failed)
                     },
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Bold
@@ -113,7 +117,7 @@ fun DownloadTaskItem(task: DownloadTaskEntity) {
             if (task.status == DownloadStatus.DOWNLOADING) {
                 Spacer(modifier = Modifier.height(12.dp))
                 LinearProgressIndicator(
-                    progress = task.progress / 100f,
+                    progress = { task.progress / 100f },
                     modifier = Modifier.fillMaxWidth().height(4.dp).clip(CircleShape),
                     color = MaterialTheme.colorScheme.primary,
                     trackColor = MaterialTheme.colorScheme.surface
@@ -129,5 +133,13 @@ fun DownloadTaskItem(task: DownloadTaskEntity) {
                 )
             }
         }
+    }
+}
+
+@Preview
+@Composable
+fun DownloadsScreenPreview() {
+    InstaDownloaderTheme {
+        DownloadsScreen()
     }
 }

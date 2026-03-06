@@ -23,4 +23,45 @@
     <string name="notification_channel_name">Downloads</string>
     <string name="download_success">Download abgeschlossen</string>
     <string name="download_error">Download fehlgeschlagen</string>
+    
+    <!-- New Strings -->
+    <string name="history_title">Verlauf</string>
+    <string name="user_not_found">Benutzer nicht gefunden. Profil evtl. privat oder blockiert.</string>
+    <string name="network_error">Netzwerkfehler: %1$s</string>
+    <string name="preview_title">Vorschau</string>
+    <string name="click_to_download">Klicke auf das Bild zum Herunterladen</string>
+    <string name="stats_posts">Beiträge</string>
+    <string name="stats_followers">Follower</string>
+    <string name="stats_following">Gefolgt</string>
+    <string name="tab_posts">Beiträge</string>
+    <string name="tab_reels">Reels</string>
+    <string name="tab_tagged">Markiert</string>
+    <string name="tab_saved">Gespeichert</string>
+    <string name="tab_archive">Archiv</string>
+    <string name="no_media_found">Keine Medien gefunden</string>
+    <string name="gallery_no_folders">Keine Ordner gefunden</string>
+    <string name="gallery_media_count">%1$d Medien</string>
+    <string name="gallery_folder_empty">Dieser Ordner ist leer</string>
+    <string name="gallery_selected_count">%1$d ausgewählt</string>
+    <string name="badge_story">Story</string>
+    <string name="badge_reel_post">Reel/Post</string>
+    <string name="badge_highlight">Highlight</string>
+    <string name="badge_image">Bild</string>
+    <string name="download_status_queued">Warten...</string>
+    <string name="download_status_completed">Fertig</string>
+    <string name="download_status_failed">Fehler</string>
+    <string name="download_history_empty">Keine Downloads in der Historie</string>
+    <string name="settings_general">Allgemein</string>
+    <string name="settings_hd_quality">HD Qualität</string>
+    <string name="settings_hd_desc">Bilder und Videos in höchster Qualität laden</string>
+    <string name="settings_clipboard">Clipboard Monitor</string>
+    <string name="settings_clipboard_desc">Instagram Links automatisch erkennen</string>
+    <string name="settings_data">Datenverwaltung</string>
+    <string name="settings_clear_history">Suchverlauf löschen</string>
+    <string name="settings_clear_history_desc">Alle Einträge aus der Suche entfernen</string>
+    <string name="settings_about">Über</string>
+    <string name="settings_logout">Ausloggen</string>
+    <string name="settings_logout_desc">Sitzung beenden</string>
+    <string name="checkpoint_required">Sicherheits-Checkpoint erforderlich. Bitte logge dich über die Instagram-App ein.</string>
+    <string name="login_fields_required">Bitte Felder ausfüllen</string>
 </resources>

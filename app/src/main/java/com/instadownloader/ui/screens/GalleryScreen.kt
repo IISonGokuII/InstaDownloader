@@ -28,14 +28,18 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import com.instadownloader.R
 import com.instadownloader.ui.components.VideoPlayer
+import com.instadownloader.ui.theme.InstaDownloaderTheme
 import com.instadownloader.ui.viewmodel.GalleryFile
 import com.instadownloader.ui.viewmodel.GalleryFolder
 import com.instadownloader.ui.viewmodel.GalleryViewModel
@@ -71,24 +75,24 @@ fun GalleryScreen(
         TopAppBar(
             title = {
                 Text(
-                    if (isSelectionMode) "${selectedFiles.size} ausgewählt"
-                    else selectedFolder ?: "Galerie"
+                    if (isSelectionMode) stringResource(R.string.gallery_selected_count, selectedFiles.size)
+                    else selectedFolder ?: stringResource(R.string.tab_gallery)
                 )
             },
             navigationIcon = {
                 if (selectedFolder != null && !isSelectionMode) {
                     IconButton(onClick = { viewModel.selectFolder(null) }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Zurück")
+                        Icon(Icons.Default.ArrowBack, contentDescription = null)
                     }
                 }
             },
             actions = {
                 if (isSelectionMode) {
                     IconButton(onClick = { viewModel.saveToPublicGallery(context) }) {
-                        Icon(Icons.Default.Save, contentDescription = "In Galerie speichern")
+                        Icon(Icons.Default.Save, contentDescription = stringResource(R.string.gallery_save))
                     }
                     IconButton(onClick = { viewModel.deleteSelected() }) {
-                        Icon(Icons.Default.Delete, contentDescription = "Löschen")
+                        Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.gallery_delete))
                     }
                 }
             },
@@ -158,7 +162,7 @@ fun GalleryScreen(
 fun FolderGrid(folders: List<GalleryFolder>, onFolderClick: (GalleryFolder) -> Unit) {
     if (folders.isEmpty()) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("Keine Ordner gefunden", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(stringResource(R.string.gallery_no_folders), color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     } else {
         LazyVerticalGrid(
@@ -188,7 +192,7 @@ fun FolderItem(folder: GalleryFolder, onClick: () -> Unit) {
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(folder.name, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyLarge)
-        Text("${folder.fileCount} Medien", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(stringResource(R.string.gallery_media_count, folder.fileCount), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
@@ -202,7 +206,7 @@ fun MediaGrid(
 ) {
     if (files.isEmpty()) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("Dieser Ordner ist leer", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(stringResource(R.string.gallery_folder_empty), color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     } else {
         LazyVerticalGrid(
@@ -262,12 +266,11 @@ fun GalleryItem(
             )
         }
         
-        // Add badge for category based on filename
         val badgeText = when {
-            item.file.name.startsWith("story_") -> "Story"
-            item.file.name.startsWith("vid_") || item.file.name.startsWith("car_") -> "Reel/Post"
-            item.file.name.startsWith("highlight_") -> "Highlight"
-            else -> "Bild"
+            item.file.name.startsWith("story_") -> stringResource(R.string.badge_story)
+            item.file.name.startsWith("vid_") || item.file.name.startsWith("car_") -> stringResource(R.string.badge_reel_post)
+            item.file.name.startsWith("highlight_") -> stringResource(R.string.badge_highlight)
+            else -> stringResource(R.string.badge_image)
         }
         
         Box(
@@ -318,7 +321,7 @@ fun FullscreenMediaViewer(
                     title = { Text(files[pagerState.currentPage].file.name, color = Color.White) },
                     navigationIcon = {
                         IconButton(onClick = onDismiss) {
-                            Icon(Icons.Default.Close, contentDescription = "Schließen", tint = Color.White)
+                            Icon(Icons.Default.Close, contentDescription = null, tint = Color.White)
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
@@ -363,5 +366,13 @@ fun FullscreenMediaViewer(
                 }
             }
         }
+    }
+}
+
+@Preview
+@Composable
+fun GalleryScreenPreview() {
+    InstaDownloaderTheme {
+        GalleryScreen()
     }
 }
