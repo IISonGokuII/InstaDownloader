@@ -20,4 +20,8 @@ class InstagramRepository @Inject constructor(
     suspend fun getHighlights(userId: String): List<Highlight> = api.getUserHighlights(userId)
     suspend fun getHighlightMedia(highlightId: String): List<InstagramMedia> = api.getHighlightStories(highlightId)
     suspend fun getMediaByUrl(url: String): InstagramMedia? = api.getMediaByUrl(url)
+    suspend fun getReels(userId: String): List<InstagramMedia> = api.getUserReels(userId)
+    suspend fun getSavedPosts(): List<InstagramMedia> = api.getSavedPosts()
+    suspend fun getTaggedPosts(userId: String): List<InstagramMedia> = api.getTaggedPosts(userId)
+    suspend fun getArchivePosts(): List<InstagramMedia> = api.getArchivePosts()
 }

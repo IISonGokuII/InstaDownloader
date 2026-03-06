@@ -223,6 +223,24 @@ fun GalleryItem(
                 tint = Color.White
             )
         }
+        
+        // Add badge for category based on filename
+        val badgeText = when {
+            item.file.name.startsWith("story_") -> "Story"
+            item.file.name.startsWith("vid_") || item.file.name.startsWith("car_") -> "Reel/Post"
+            item.file.name.startsWith("highlight_") -> "Highlight"
+            else -> "Bild"
+        }
+        
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .padding(4.dp)
+                .background(Color.Black.copy(alpha = 0.6f), RoundedCornerShape(4.dp))
+                .padding(horizontal = 6.dp, vertical = 2.dp)
+        ) {
+            Text(badgeText, style = MaterialTheme.typography.labelSmall, color = Color.White, fontSize = 9.sp)
+        }
 
         if (isSelected) {
             Box(

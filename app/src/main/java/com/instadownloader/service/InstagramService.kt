@@ -207,4 +207,57 @@ class InstagramService {
             null
         }
     }
+
+    suspend fun getUserReels(userId: String): List<InstagramMedia> {
+        return try {
+            val response: HttpResponse = client.post("https://www.instagram.com/api/v1/clips/user/") {
+                header("Content-Type", "application/x-www-form-urlencoded")
+                setBody(FormDataContent(
+                    Parameters.build {
+                        append("target_user_id", userId)
+                        append("page_size", "12")
+                    }
+                ))
+            }
+            val jsonObj = jsonConfig.decodeFromString<JsonObject>(response.bodyAsText())
+            val items = jsonObj["items"]?.jsonArray ?: return emptyList()
+            items.mapNotNull { it.jsonObject["media"] }.map { jsonConfig.decodeFromJsonElement<InstagramMedia>(it) }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emptyList()
+        }
+    }
+
+    suspend fun getSavedPosts(): List<InstagramMedia> {
+        return try {
+            val response: JsonObject = client.get("https://www.instagram.com/api/v1/feed/saved/posts/").body()
+            val items = response["items"]?.jsonArray ?: return emptyList()
+            items.mapNotNull { it.jsonObject["media"] }.map { jsonConfig.decodeFromJsonElement<InstagramMedia>(it) }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emptyList()
+        }
+    }
+
+    suspend fun getTaggedPosts(userId: String): List<InstagramMedia> {
+        return try {
+            val response: JsonObject = client.get("https://www.instagram.com/api/v1/usertags/$userId/feed/").body()
+            val items = response["items"]?.jsonArray ?: return emptyList()
+            items.map { jsonConfig.decodeFromJsonElement<InstagramMedia>(it) }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emptyList()
+        }
+    }
+
+    suspend fun getArchivePosts(): List<InstagramMedia> {
+        return try {
+            val response: JsonObject = client.get("https://www.instagram.com/api/v1/feed/only_me_feed/").body()
+            val items = response["items"]?.jsonArray ?: return emptyList()
+            items.map { jsonConfig.decodeFromJsonElement<InstagramMedia>(it) }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emptyList()
+        }
+    }
 }

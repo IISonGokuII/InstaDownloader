@@ -23,7 +23,11 @@ sealed class SearchUiState {
         val user: InstagramUser,
         val posts: List<InstagramMedia>,
         val stories: List<InstagramMedia>,
-        val highlights: List<Highlight>
+        val highlights: List<Highlight>,
+        val reels: List<InstagramMedia>,
+        val saved: List<InstagramMedia>,
+        val tagged: List<InstagramMedia>,
+        val archive: List<InstagramMedia>
     ) : SearchUiState()
     data class SuccessMedia(val media: InstagramMedia) : SearchUiState()
     data class Error(val message: String) : SearchUiState()
@@ -54,8 +58,12 @@ class SearchViewModel @Inject constructor(
                     val posts = repository.getPosts(user.pk)
                     val stories = repository.getStories(user.pk)
                     val highlights = repository.getHighlights(user.pk)
+                    val reels = repository.getReels(user.pk)
+                    val saved = if (user.is_private) repository.getSavedPosts() else emptyList() // Only valid for logged in user typically, assuming private/own user here for demo
+                    val tagged = repository.getTaggedPosts(user.pk)
+                    val archive = if (user.is_private) repository.getArchivePosts() else emptyList()
                     
-                    _uiState.value = SearchUiState.Success(user, posts, stories, highlights)
+                    _uiState.value = SearchUiState.Success(user, posts, stories, highlights, reels, saved, tagged, archive)
                     
                     historyDao.insertSearch(
                         SearchHistoryEntity(

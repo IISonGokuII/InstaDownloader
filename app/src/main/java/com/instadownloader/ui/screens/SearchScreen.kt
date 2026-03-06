@@ -268,15 +268,50 @@ fun UserDetailContent(
 
         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(3),
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(1.dp),
-            horizontalArrangement = Arrangement.spacedBy(1.dp),
-            verticalArrangement = Arrangement.spacedBy(1.dp)
+        var selectedProfileTab by remember { mutableStateOf(0) }
+        val profileTabs = listOf("Beiträge", "Reels", "Markiert", "Gespeichert", "Archiv")
+
+        ScrollableTabRow(
+            selectedTabIndex = selectedProfileTab,
+            containerColor = Color.Transparent,
+            contentColor = MaterialTheme.colorScheme.primary,
+            edgePadding = 16.dp
         ) {
-            items(posts) { post ->
-                PostItem(post, onDownloadClick)
+            profileTabs.forEachIndexed { index, title ->
+                Tab(
+                    selected = selectedProfileTab == index,
+                    onClick = { selectedProfileTab = index },
+                    text = { Text(title, style = MaterialTheme.typography.labelMedium) },
+                    selectedContentColor = MaterialTheme.colorScheme.primary,
+                    unselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
+        val activeMediaList = when (selectedProfileTab) {
+            0 -> posts
+            1 -> state.reels
+            2 -> state.tagged
+            3 -> state.saved
+            4 -> state.archive
+            else -> emptyList()
+        }
+
+        if (activeMediaList.isEmpty()) {
+            Box(modifier = Modifier.fillMaxSize().padding(32.dp), contentAlignment = Alignment.Center) {
+                Text("Keine Medien gefunden", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        } else {
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(3),
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(1.dp),
+                horizontalArrangement = Arrangement.spacedBy(1.dp),
+                verticalArrangement = Arrangement.spacedBy(1.dp)
+            ) {
+                items(activeMediaList) { media ->
+                    PostItem(media, onDownloadClick)
+                }
             }
         }
     }
