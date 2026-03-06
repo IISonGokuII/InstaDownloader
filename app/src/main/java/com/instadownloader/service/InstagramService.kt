@@ -110,6 +110,37 @@ class InstagramService {
         }
     }
 
+    suspend fun submitTwoFactor(identifier: String, code: String): AuthResult {
+        return try {
+            val cookies = client.plugin(HttpCookies).get(Url("https://www.instagram.com"))
+            val csrfToken = cookies.find { it.name == "csrftoken" }?.value ?: ""
+
+            val response: HttpResponse = client.post("https://www.instagram.com/accounts/login/ajax/two_factor/") {
+                header("x-csrftoken", csrfToken)
+                header("Content-Type", "application/x-www-form-urlencoded")
+                setBody(FormDataContent(
+                    Parameters.build {
+                        append("identifier", identifier)
+                        append("verificationCode", code)
+                    }
+                ))
+            }
+
+            val responseBody = response.bodyAsText()
+            val jsonObj = jsonConfig.decodeFromString<JsonObject>(responseBody)
+
+            if (jsonObj["authenticated"]?.toString()?.toBooleanStrictOrNull() == true) {
+                AuthResult.Success
+            } else {
+                val errorMsg = jsonObj["message"]?.toString()?.replace("\"", "") ?: "2FA fehlgeschlagen"
+                AuthResult.Error(errorMsg)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            AuthResult.Error(e.message ?: "2FA-Anfrage fehlgeschlagen")
+        }
+    }
+
     suspend fun getUserProfile(username: String): InstagramUser? {
         return try {
             val response: JsonObject = client.get("https://www.instagram.com/api/v1/users/web_profile_info/?username=$username").body()

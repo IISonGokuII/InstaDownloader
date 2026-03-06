@@ -12,6 +12,7 @@ class InstagramRepository @Inject constructor(
     private val api: InstagramService
 ) {
     suspend fun login(user: String, pass: String): AuthResult = api.login(user, pass)
+    suspend fun submitTwoFactor(identifier: String, code: String): AuthResult = api.submitTwoFactor(identifier, code)
     suspend fun getUser(username: String): InstagramUser? = api.getUserProfile(username)
     suspend fun getPosts(userId: String): List<InstagramMedia> = api.getUserPosts(userId)
 }

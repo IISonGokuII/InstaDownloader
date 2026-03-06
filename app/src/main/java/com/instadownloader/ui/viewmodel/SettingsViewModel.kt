@@ -10,7 +10,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-    private val prefs: UserPreferences,
+    val prefs: UserPreferences,
     private val historyDao: SearchHistoryDao
 ) : ViewModel() {
 

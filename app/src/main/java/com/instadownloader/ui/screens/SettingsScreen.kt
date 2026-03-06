@@ -19,6 +19,7 @@ import com.instadownloader.ui.viewmodel.SettingsViewModel
 
 @Composable
 fun SettingsScreen(
+    onLogout: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val isHdQuality by viewModel.isHdQuality.collectAsState(initial = true)
@@ -63,6 +64,12 @@ fun SettingsScreen(
                 subtitle = "1.0.0 (Build 2026)",
                 icon = Icons.Default.Info,
                 onClick = {}
+            )
+            SettingsClickItem(
+                title = "Ausloggen",
+                subtitle = "Sitzung beenden",
+                icon = Icons.Default.DeleteSweep, // Placeholder for exit to app
+                onClick = onLogout
             )
         }
     }

@@ -26,10 +26,29 @@ class AuthViewModel @Inject constructor(
         }
     }
 
+    fun submitTwoFactor(identifier: String, code: String, onResult: (AuthResult) -> Unit) {
+        viewModelScope.launch {
+            val result = repository.submitTwoFactor(identifier, code)
+            if (result is AuthResult.Success) {
+                prefs.setLoggedIn(true)
+                prefs.setAnonymous(false)
+            }
+            onResult(result)
+        }
+    }
+
     fun loginAnonymous() {
         viewModelScope.launch {
             prefs.setAnonymous(true)
             prefs.setLoggedIn(false)
+        }
+    }
+
+    fun logout() {
+        viewModelScope.launch {
+            prefs.setAnonymous(false)
+            prefs.setLoggedIn(false)
+            // Ideally clear cookies from Ktor here
         }
     }
 }

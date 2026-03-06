@@ -45,7 +45,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             InstaDownloaderTheme {
-                NavGraph()
+                NavGraph(prefs = prefs)
             }
         }
     }

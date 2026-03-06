@@ -29,6 +29,7 @@ import com.instadownloader.ui.viewmodel.AuthViewModel
 @Composable
 fun LoginScreen(
     onLoginSuccess: () -> Unit,
+    onTwoFactorRequired: (String, AuthResult.TwoFactorMethod) -> Unit,
     viewModel: AuthViewModel = hiltViewModel()
 ) {
     var username by remember { mutableStateOf("") }
@@ -118,7 +119,8 @@ fun LoginScreen(
                                 when (result) {
                                     is AuthResult.Success -> onLoginSuccess()
                                     is AuthResult.Error -> errorMessage = result.message
-                                    else -> errorMessage = "Zwei-Faktor Auth wird aktuell noch eingebaut."
+                                    is AuthResult.TwoFactorRequired -> onTwoFactorRequired(result.identifier, result.method)
+                                    is AuthResult.CheckpointRequired -> errorMessage = "Sicherheits-Checkpoint erforderlich. Bitte logge dich über die Instagram-App ein."
                                 }
                             }
                         } else {
