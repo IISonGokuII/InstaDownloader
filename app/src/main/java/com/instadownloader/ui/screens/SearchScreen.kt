@@ -16,6 +16,8 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.PhotoLibrary
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -157,11 +159,27 @@ fun SearchHistoryList(
 
 @Composable
 fun UserDetailContent(user: InstagramUser, posts: List<InstagramMedia>) {
+    val context = LocalContext.current
+    
     Column(modifier = Modifier.fillMaxSize()) {
         // User Header
         GlassCard(modifier = Modifier.padding(16.dp)) {
             Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                StoryRingAvatar(imageUrl = user.profile_pic_url, hasStory = false, size = 64.dp)
+                Box(modifier = Modifier.clickable {
+                    val hdPicUrl = user.profile_pic_url_hd.ifEmpty { user.profile_pic_url }
+                    if (hdPicUrl.isNotEmpty()) {
+                        val workRequest = OneTimeWorkRequestBuilder<DownloadWorker>()
+                            .setInputData(workDataOf(
+                                DownloadWorker.KEY_URL to hdPicUrl,
+                                DownloadWorker.KEY_FILENAME to "profile_${user.username}.jpg",
+                                DownloadWorker.KEY_CATEGORY to user.username
+                            ))
+                            .build()
+                        WorkManager.getInstance(context).enqueue(workRequest)
+                    }
+                }) {
+                    StoryRingAvatar(imageUrl = user.profile_pic_url, hasStory = false, size = 64.dp)
+                }
                 Spacer(modifier = Modifier.width(16.dp))
                 Column {
                     Text(user.username, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
@@ -204,18 +222,34 @@ fun StatItem(count: String, label: String) {
 @Composable
 fun PostItem(post: InstagramMedia) {
     val context = LocalContext.current
-    val imageUrl = post.image_versions2?.candidates?.firstOrNull()?.url ?: ""
+    val imageUrl = post.image_versions2?.candidates?.firstOrNull()?.url ?: 
+                   post.carousel_media?.firstOrNull()?.image_versions2?.candidates?.firstOrNull()?.url ?: ""
+    
+    val username = post.user?.username ?: "Downloads"
     
     Box(modifier = Modifier.aspectRatio(1f).clickable {
-        // Start download for the post
-        val workRequest = OneTimeWorkRequestBuilder<DownloadWorker>()
-            .setInputData(workDataOf(
-                DownloadWorker.KEY_URL to imageUrl,
-                DownloadWorker.KEY_FILENAME to "insta_${post.id}.jpg",
-                DownloadWorker.KEY_CATEGORY to "Posts"
-            ))
-            .build()
-        WorkManager.getInstance(context).enqueue(workRequest)
+        // Start download for the post based on type
+        when (post.media_type) {
+            1 -> { // Image
+                val url = post.image_versions2?.candidates?.firstOrNull()?.url ?: return@clickable
+                enqueueDownload(context, url, "img_${post.id}.jpg", username)
+            }
+            2 -> { // Video
+                val url = post.video_versions?.firstOrNull()?.url ?: return@clickable
+                enqueueDownload(context, url, "vid_${post.id}.mp4", username)
+            }
+            8 -> { // Carousel
+                post.carousel_media?.forEachIndexed { index, media ->
+                    if (media.media_type == 1) {
+                        val url = media.image_versions2?.candidates?.firstOrNull()?.url ?: return@forEachIndexed
+                        enqueueDownload(context, url, "car_${post.id}_$index.jpg", username)
+                    } else if (media.media_type == 2) {
+                        val url = media.video_versions?.firstOrNull()?.url ?: return@forEachIndexed
+                        enqueueDownload(context, url, "car_${post.id}_$index.mp4", username)
+                    }
+                }
+            }
+        }
     }) {
         AsyncImage(
             model = imageUrl,
@@ -233,12 +267,23 @@ fun PostItem(post: InstagramMedia) {
                     .padding(2.dp)
             ) {
                 Icon(
-                    Icons.Default.Download,
+                    if (post.media_type == 8) Icons.Default.PhotoLibrary else Icons.Default.PlayArrow,
                     contentDescription = null,
-                    modifier = Modifier.size(12.dp),
+                    modifier = Modifier.size(16.dp),
                     tint = Color.White
                 )
             }
         }
     }
+}
+
+fun enqueueDownload(context: android.content.Context, url: String, filename: String, category: String) {
+    val workRequest = OneTimeWorkRequestBuilder<DownloadWorker>()
+        .setInputData(workDataOf(
+            DownloadWorker.KEY_URL to url,
+            DownloadWorker.KEY_FILENAME to filename,
+            DownloadWorker.KEY_CATEGORY to category
+        ))
+        .build()
+    WorkManager.getInstance(context).enqueue(workRequest)
 }
