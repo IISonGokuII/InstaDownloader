@@ -9,17 +9,12 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Download
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.PhotoLibrary
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -32,9 +27,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
-import androidx.work.workDataOf
 import coil.compose.AsyncImage
 import com.instadownloader.data.local.SearchHistoryEntity
 import com.instadownloader.data.model.Highlight
@@ -44,7 +36,6 @@ import com.instadownloader.ui.components.GlassCard
 import com.instadownloader.ui.components.StoryRingAvatar
 import com.instadownloader.ui.viewmodel.SearchUiState
 import com.instadownloader.ui.viewmodel.SearchViewModel
-import com.instadownloader.worker.DownloadWorker
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,7 +46,6 @@ fun SearchScreen(
     var searchQuery by remember { mutableStateOf(initialUrl ?: "") }
     val uiState by viewModel.uiState.collectAsState()
     val history by viewModel.searchHistory.collectAsState(initial = emptyList())
-    val context = LocalContext.current
 
     LaunchedEffect(initialUrl) {
         if (initialUrl != null) {
@@ -64,7 +54,6 @@ fun SearchScreen(
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        // Search Bar
         OutlinedTextField(
             value = searchQuery,
             onValueChange = { searchQuery = it },
@@ -115,14 +104,20 @@ fun SearchScreen(
                     posts = state.posts,
                     stories = state.stories,
                     highlights = state.highlights,
-                    onHighlightClick = { viewModel.downloadHighlight(it, context, state.user.username) }
+                    onHighlightClick = { viewModel.downloadHighlight(it, state.user.username) },
+                    onDownloadClick = { url, filename -> viewModel.enqueueDownload(url, filename, state.user.username) }
                 )
             }
             is SearchUiState.SuccessMedia -> {
                 Box(modifier = Modifier.fillMaxSize().padding(16.dp), contentAlignment = Alignment.TopCenter) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text("Vorschau", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(bottom = 16.dp))
-                        PostItem(state.media)
+                        PostItem(
+                            post = state.media,
+                            onDownloadClick = { url, filename -> 
+                                viewModel.enqueueDownload(url, filename, state.media.user?.username ?: "Downloads") 
+                            }
+                        )
                         Spacer(modifier = Modifier.height(16.dp))
                         Text("Klicke auf das Bild zum Herunterladen", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
@@ -159,7 +154,7 @@ fun SearchHistoryList(
                     AsyncImage(
                         model = item.profilePicUrl,
                         contentDescription = null,
-                        modifier = Modifier.size(40.dp).clip(RoundedCornerShape(20.dp)),
+                        modifier = Modifier.size(40.dp).clip(CircleShape),
                         contentScale = ContentScale.Crop
                     )
                 },
@@ -189,18 +184,16 @@ fun UserDetailContent(
     posts: List<InstagramMedia>,
     stories: List<InstagramMedia>,
     highlights: List<Highlight>,
-    onHighlightClick: (Highlight) -> Unit
+    onHighlightClick: (Highlight) -> Unit,
+    onDownloadClick: (String, String) -> Unit
 ) {
-    val context = LocalContext.current
-    
     Column(modifier = Modifier.fillMaxSize()) {
-        // User Header
         GlassCard(modifier = Modifier.padding(16.dp)) {
             Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                 Box(modifier = Modifier.clickable {
                     val hdPicUrl = user.profile_pic_url_hd.ifEmpty { user.profile_pic_url }
                     if (hdPicUrl.isNotEmpty()) {
-                        enqueueDownload(context, hdPicUrl, "profile_${user.username}.jpg", user.username)
+                        onDownloadClick(hdPicUrl, "profile_${user.username}.jpg")
                     }
                 }) {
                     StoryRingAvatar(imageUrl = user.profile_pic_url, hasStory = stories.isNotEmpty(), size = 64.dp)
@@ -221,7 +214,6 @@ fun UserDetailContent(
             }
         }
 
-        // Stories Row (if available)
         if (stories.isNotEmpty()) {
             Text("Stories", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(start = 16.dp, bottom = 8.dp))
             LazyRow(
@@ -233,7 +225,7 @@ fun UserDetailContent(
                     Box(modifier = Modifier.size(70.dp).clickable {
                         val url = story.video_versions?.firstOrNull()?.url ?: story.image_versions2?.candidates?.firstOrNull()?.url ?: ""
                         val ext = if (story.media_type == 2) "mp4" else "jpg"
-                        enqueueDownload(context, url, "story_${story.id}.$ext", user.username)
+                        onDownloadClick(url, "story_${story.id}.$ext")
                     }) {
                         StoryRingAvatar(
                             imageUrl = story.image_versions2?.candidates?.lastOrNull()?.url ?: "",
@@ -245,7 +237,6 @@ fun UserDetailContent(
             }
         }
 
-        // Highlights Row
         if (highlights.isNotEmpty()) {
             Text("Highlights", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(start = 16.dp, bottom = 8.dp))
             LazyRow(
@@ -261,7 +252,7 @@ fun UserDetailContent(
                         AsyncImage(
                             model = highlight.cover_media?.cropped_image_version?.url,
                             contentDescription = null,
-                            modifier = Modifier.size(60.dp).clip(androidx.compose.foundation.shape.CircleShape),
+                            modifier = Modifier.size(60.dp).clip(CircleShape),
                             contentScale = ContentScale.Crop
                         )
                         Text(
@@ -277,7 +268,6 @@ fun UserDetailContent(
 
         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-        // Posts Grid
         LazyVerticalGrid(
             columns = GridCells.Fixed(3),
             modifier = Modifier.fillMaxSize(),
@@ -286,7 +276,7 @@ fun UserDetailContent(
             verticalArrangement = Arrangement.spacedBy(1.dp)
         ) {
             items(posts) { post ->
-                PostItem(post)
+                PostItem(post, onDownloadClick)
             }
         }
     }
@@ -301,32 +291,31 @@ fun StatItem(count: String, label: String) {
 }
 
 @Composable
-fun PostItem(post: InstagramMedia) {
-    val context = LocalContext.current
+fun PostItem(
+    post: InstagramMedia,
+    onDownloadClick: (String, String) -> Unit
+) {
     val imageUrl = post.image_versions2?.candidates?.firstOrNull()?.url ?: 
                    post.carousel_media?.firstOrNull()?.image_versions2?.candidates?.firstOrNull()?.url ?: ""
     
-    val username = post.user?.username ?: "Downloads"
-    
     Box(modifier = Modifier.aspectRatio(1f).clickable {
-        // Start download for the post based on type
         when (post.media_type) {
             1 -> { // Image
                 val url = post.image_versions2?.candidates?.firstOrNull()?.url ?: return@clickable
-                enqueueDownload(context, url, "img_${post.id}.jpg", username)
+                onDownloadClick(url, "img_${post.id}.jpg")
             }
             2 -> { // Video
                 val url = post.video_versions?.firstOrNull()?.url ?: return@clickable
-                enqueueDownload(context, url, "vid_${post.id}.mp4", username)
+                onDownloadClick(url, "vid_${post.id}.mp4")
             }
             8 -> { // Carousel
                 post.carousel_media?.forEachIndexed { index, media ->
                     if (media.media_type == 1) {
                         val url = media.image_versions2?.candidates?.firstOrNull()?.url ?: return@forEachIndexed
-                        enqueueDownload(context, url, "car_${post.id}_$index.jpg", username)
+                        onDownloadClick(url, "car_${post.id}_$index.jpg")
                     } else if (media.media_type == 2) {
                         val url = media.video_versions?.firstOrNull()?.url ?: return@forEachIndexed
-                        enqueueDownload(context, url, "car_${post.id}_$index.mp4", username)
+                        onDownloadClick(url, "car_${post.id}_$index.mp4")
                     }
                 }
             }
@@ -338,7 +327,6 @@ fun PostItem(post: InstagramMedia) {
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
         )
-        // Simple overlay indicator for video or carousel
         if (post.media_type != 1) {
             Box(
                 modifier = Modifier
@@ -356,15 +344,4 @@ fun PostItem(post: InstagramMedia) {
             }
         }
     }
-}
-
-fun enqueueDownload(context: android.content.Context, url: String, filename: String, category: String) {
-    val workRequest = OneTimeWorkRequestBuilder<DownloadWorker>()
-        .setInputData(workDataOf(
-            DownloadWorker.KEY_URL to url,
-            DownloadWorker.KEY_FILENAME to filename,
-            DownloadWorker.KEY_CATEGORY to category
-        ))
-        .build()
-    WorkManager.getInstance(context).enqueue(workRequest)
 }

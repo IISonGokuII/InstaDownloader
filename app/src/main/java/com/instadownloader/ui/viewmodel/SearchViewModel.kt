@@ -8,16 +8,13 @@ import com.instadownloader.data.model.Highlight
 import com.instadownloader.data.model.InstagramMedia
 import com.instadownloader.data.model.InstagramUser
 import com.instadownloader.data.repository.InstagramRepository
+import com.instadownloader.data.repository.DownloadRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
-import androidx.work.workDataOf
-import com.instadownloader.worker.DownloadWorker
 
 sealed class SearchUiState {
     object Idle : SearchUiState()
@@ -35,6 +32,7 @@ sealed class SearchUiState {
 @HiltViewModel
 class SearchViewModel @Inject constructor(
     private val repository: InstagramRepository,
+    private val downloadRepository: DownloadRepository,
     private val historyDao: SearchHistoryDao
 ) : ViewModel() {
 
@@ -76,7 +74,7 @@ class SearchViewModel @Inject constructor(
         }
     }
 
-    fun downloadHighlight(highlight: Highlight, context: android.content.Context, username: String) {
+    fun downloadHighlight(highlight: Highlight, username: String) {
         viewModelScope.launch {
             try {
                 val mediaList = repository.getHighlightMedia(highlight.id)
@@ -84,19 +82,18 @@ class SearchViewModel @Inject constructor(
                     val url = media.video_versions?.firstOrNull()?.url ?: media.image_versions2?.candidates?.firstOrNull()?.url ?: ""
                     val ext = if (media.media_type == 2) "mp4" else "jpg"
                     if (url.isNotEmpty()) {
-                        val workRequest = OneTimeWorkRequestBuilder<DownloadWorker>()
-                            .setInputData(workDataOf(
-                                "url" to url,
-                                "filename" to "highlight_${highlight.id}_$index.$ext",
-                                "category" to username
-                            ))
-                            .build()
-                        WorkManager.getInstance(context).enqueue(workRequest)
+                        downloadRepository.enqueueDownload(url, "highlight_${highlight.id}_$index.$ext", username)
                     }
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
             }
+        }
+    }
+
+    fun enqueueDownload(url: String, filename: String, username: String) {
+        viewModelScope.launch {
+            downloadRepository.enqueueDownload(url, filename, username)
         }
     }
 

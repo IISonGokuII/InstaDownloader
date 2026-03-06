@@ -11,11 +11,15 @@ import com.instadownloader.service.DownloadManager
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 
+import com.instadownloader.data.local.DownloadStatus
+import com.instadownloader.data.local.DownloadTaskDao
+
 @HiltWorker
 class DownloadWorker @AssistedInject constructor(
     @Assisted private val context: Context,
     @Assisted params: WorkerParameters,
-    private val downloadManager: DownloadManager
+    private val downloadManager: DownloadManager,
+    private val downloadTaskDao: DownloadTaskDao
 ) : CoroutineWorker(context, params) {
 
     override suspend fun getForegroundInfo(): ForegroundInfo {
@@ -33,13 +37,25 @@ class DownloadWorker @AssistedInject constructor(
         val filename = inputData.getString(KEY_FILENAME) ?: return Result.failure()
         val category = inputData.getString(KEY_CATEGORY) ?: return Result.failure()
 
+        downloadTaskDao.updateStatus(id.toString(), DownloadStatus.DOWNLOADING, null)
+
         return try {
             downloadManager.downloadFile(url, filename, category) { progress ->
                 setProgressAsync(workDataOf(KEY_PROGRESS to progress))
+                // Also update Room for the History Tab
+                kotlinx.coroutines.GlobalScope.launch {
+                    downloadTaskDao.updateProgress(id.toString(), DownloadStatus.DOWNLOADING, progress)
+                }
             }
+            downloadTaskDao.updateStatus(id.toString(), DownloadStatus.COMPLETED, null)
             Result.success()
         } catch (e: Exception) {
-            if (runAttemptCount < 3) Result.retry() else Result.failure()
+            if (runAttemptCount < 3) {
+                Result.retry()
+            } else {
+                downloadTaskDao.updateStatus(id.toString(), DownloadStatus.FAILED, e.message)
+                Result.failure()
+            }
         }
     }
 

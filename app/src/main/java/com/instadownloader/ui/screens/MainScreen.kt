@@ -13,7 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.instadownloader.data.preferences.UserPreferences
 import com.instadownloader.ui.viewmodel.SettingsViewModel
 
 @Composable
@@ -24,7 +23,6 @@ fun MainScreen(
 ) {
     var selectedTabIndex by remember { mutableStateOf(0) }
     
-    // Jump to search if we have a shared URL
     LaunchedEffect(initialUrl) {
         if (initialUrl != null) {
             selectedTabIndex = 0
@@ -92,10 +90,3 @@ fun MainScreen(
 }
 
 data class TabItem(val title: String, val icon: ImageVector)
-
-@Composable
-fun DownloadsScreen() {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.Center) {
-        Text("Download History wird im nächsten Update implementiert")
-    }
-}

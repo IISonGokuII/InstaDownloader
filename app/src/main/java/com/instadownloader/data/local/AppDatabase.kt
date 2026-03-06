@@ -3,7 +3,11 @@ package com.instadownloader.data.local
 import androidx.room.Database
 import androidx.room.RoomDatabase
 
-@Database(entities = [SearchHistoryEntity::class], version = 1, exportSchema = false)
+import androidx.room.TypeConverters
+
+@Database(entities = [SearchHistoryEntity::class, DownloadTaskEntity::class], version = 2, exportSchema = false)
+@TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun searchHistoryDao(): SearchHistoryDao
+    abstract fun downloadTaskDao(): DownloadTaskDao
 }

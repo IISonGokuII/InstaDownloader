@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.instadownloader.data.local.AppDatabase
 import com.instadownloader.data.local.SearchHistoryDao
+import com.instadownloader.data.local.DownloadTaskDao
 import com.instadownloader.service.InstagramService
 import dagger.Module
 import dagger.Provides
@@ -23,13 +24,19 @@ object AppModule {
             context,
             AppDatabase::class.java,
             "instadownloader.db"
-        ).build()
+        ).fallbackToDestructiveMigration().build()
     }
 
     @Provides
     @Singleton
     fun provideSearchHistoryDao(database: AppDatabase): SearchHistoryDao {
         return database.searchHistoryDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideDownloadTaskDao(database: AppDatabase): DownloadTaskDao {
+        return database.downloadTaskDao()
     }
 
     @Provides
