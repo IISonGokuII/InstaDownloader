@@ -15,6 +15,9 @@ import coil.compose.AsyncImage
 import com.instadownloader.ui.theme.Obsidian
 import com.instadownloader.ui.theme.instagramGradient
 
+import androidx.compose.ui.tooling.preview.Preview
+import com.instadownloader.ui.theme.InstaDownloaderTheme
+
 @Composable
 fun StoryRingAvatar(imageUrl: String, hasStory: Boolean, size: Dp = 80.dp) {
     Box(contentAlignment = Alignment.Center) {
@@ -27,5 +30,13 @@ fun StoryRingAvatar(imageUrl: String, hasStory: Boolean, size: Dp = 80.dp) {
             modifier = Modifier.size(size).clip(CircleShape),
             contentScale = ContentScale.Crop
         )
+    }
+}
+
+@Preview
+@Composable
+fun StoryRingAvatarPreview() {
+    InstaDownloaderTheme {
+        StoryRingAvatar(imageUrl = "", hasStory = true)
     }
 }

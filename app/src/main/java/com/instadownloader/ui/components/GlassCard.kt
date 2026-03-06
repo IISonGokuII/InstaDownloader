@@ -14,6 +14,11 @@ import androidx.compose.ui.unit.dp
 import com.instadownloader.ui.theme.glassBorderGradient
 import com.instadownloader.ui.theme.glassGradient
 
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Text
+import com.instadownloader.ui.theme.InstaDownloaderTheme
+
 @Composable
 fun GlassCard(
     modifier: Modifier = Modifier,
@@ -28,4 +33,14 @@ fun GlassCard(
             .border(width = 0.5.dp, brush = glassBorderGradient, shape = shape)
             .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
     ) { Column(content = content) }
+}
+
+@Preview
+@Composable
+fun GlassCardPreview() {
+    InstaDownloaderTheme {
+        GlassCard(modifier = Modifier.padding(16.dp)) {
+            Text("Test Content in Glass Card", color = androidx.compose.ui.graphics.Color.White, modifier = Modifier.padding(16.dp))
+        }
+    }
 }

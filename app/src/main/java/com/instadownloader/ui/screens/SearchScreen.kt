@@ -104,6 +104,10 @@ fun SearchScreen(
                     posts = state.posts,
                     stories = state.stories,
                     highlights = state.highlights,
+                    reels = state.reels,
+                    saved = state.saved,
+                    tagged = state.tagged,
+                    archive = state.archive,
                     onHighlightClick = { viewModel.downloadHighlight(it, state.user.username) },
                     onDownloadClick = { url, filename -> viewModel.enqueueDownload(url, filename, state.user.username) }
                 )
@@ -184,6 +188,10 @@ fun UserDetailContent(
     posts: List<InstagramMedia>,
     stories: List<InstagramMedia>,
     highlights: List<Highlight>,
+    reels: List<InstagramMedia>,
+    saved: List<InstagramMedia>,
+    tagged: List<InstagramMedia>,
+    archive: List<InstagramMedia>,
     onHighlightClick: (Highlight) -> Unit,
     onDownloadClick: (String, String) -> Unit
 ) {
@@ -290,10 +298,10 @@ fun UserDetailContent(
 
         val activeMediaList = when (selectedProfileTab) {
             0 -> posts
-            1 -> state.reels
-            2 -> state.tagged
-            3 -> state.saved
-            4 -> state.archive
+            1 -> reels
+            2 -> tagged
+            3 -> saved
+            4 -> archive
             else -> emptyList()
         }
 

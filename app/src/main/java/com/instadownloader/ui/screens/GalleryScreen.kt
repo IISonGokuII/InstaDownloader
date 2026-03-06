@@ -30,6 +30,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -39,6 +40,10 @@ import com.instadownloader.ui.viewmodel.GalleryFile
 import com.instadownloader.ui.viewmodel.GalleryFolder
 import com.instadownloader.ui.viewmodel.GalleryViewModel
 import java.io.File
+import androidx.compose.foundation.gestures.rememberTransformableState
+import androidx.compose.foundation.gestures.transformable
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.graphicsLayer
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -95,15 +100,48 @@ fun GalleryScreen(
         if (selectedFolder == null) {
             FolderGrid(folders) { viewModel.selectFolder(it.name) }
         } else {
-            MediaGrid(
-                files = currentFiles,
-                selectedFiles = selectedFiles,
-                onToggleSelection = { viewModel.toggleSelection(it) },
-                onClick = { index -> 
-                    if (isSelectionMode) viewModel.toggleSelection(currentFiles[index].file)
-                    else fullscreenMediaIndex = index
+            var selectedFilter by remember { mutableStateOf("Alle") }
+            val filters = listOf("Alle", "Stories", "Reels/Posts", "Highlights")
+            
+            Column {
+                ScrollableTabRow(
+                    selectedTabIndex = filters.indexOf(selectedFilter),
+                    containerColor = Color.Transparent,
+                    contentColor = MaterialTheme.colorScheme.primary,
+                    edgePadding = 16.dp,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    filters.forEachIndexed { index, title ->
+                        Tab(
+                            selected = selectedFilter == title,
+                            onClick = { selectedFilter = title },
+                            text = { Text(title, style = MaterialTheme.typography.labelMedium) },
+                            selectedContentColor = MaterialTheme.colorScheme.primary,
+                            unselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
-            )
+
+                val filteredFiles = currentFiles.filter { file ->
+                    when (selectedFilter) {
+                        "Stories" -> file.file.name.startsWith("story_")
+                        "Reels/Posts" -> file.file.name.startsWith("vid_") || file.file.name.startsWith("img_") || file.file.name.startsWith("car_")
+                        "Highlights" -> file.file.name.startsWith("highlight_")
+                        else -> true
+                    }
+                }
+
+                MediaGrid(
+                    files = filteredFiles,
+                    selectedFiles = selectedFiles,
+                    onToggleSelection = { viewModel.toggleSelection(it) },
+                    onClick = { index -> 
+                        val clickedFile = filteredFiles[index]
+                        if (isSelectionMode) viewModel.toggleSelection(clickedFile.file)
+                        else fullscreenMediaIndex = currentFiles.indexOf(clickedFile)
+                    }
+                )
+            }
         }
     }
 
@@ -259,11 +297,6 @@ fun GalleryItem(
         }
     }
 }
-
-import androidx.compose.foundation.gestures.rememberTransformableState
-import androidx.compose.foundation.gestures.transformable
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.graphicsLayer
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable

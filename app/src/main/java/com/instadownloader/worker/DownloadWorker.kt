@@ -14,6 +14,10 @@ import dagger.assisted.AssistedInject
 import com.instadownloader.data.local.DownloadStatus
 import com.instadownloader.data.local.DownloadTaskDao
 
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+
 @HiltWorker
 class DownloadWorker @AssistedInject constructor(
     @Assisted private val context: Context,

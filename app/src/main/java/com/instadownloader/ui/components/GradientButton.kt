@@ -21,6 +21,10 @@ import androidx.compose.ui.unit.dp
 import com.instadownloader.ui.theme.Surface3
 import com.instadownloader.ui.theme.instagramGradient
 
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.foundation.layout.padding
+import com.instadownloader.ui.theme.InstaDownloaderTheme
+
 @Composable
 fun GradientButton(
     text: String,
@@ -41,5 +45,17 @@ fun GradientButton(
             if (loading) CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
             else Text(text, color = Color.White, fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.titleLarge)
         }
+    }
+}
+
+@Preview
+@Composable
+fun GradientButtonPreview() {
+    InstaDownloaderTheme {
+        GradientButton(
+            text = "Anmelden",
+            onClick = {},
+            modifier = Modifier.padding(16.dp)
+        )
     }
 }
